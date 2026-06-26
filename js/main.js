@@ -1,0 +1,1 @@
+document.querySelector('button').onclick=()=>window.scrollTo({top:innerHeight,behavior:'smooth'});
