@@ -1,0 +1,40 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="css/style.css"><style>
+.page-hero{min-height:40vh;display:flex;flex-direction:column;justify-content:center;padding:140px 8% 60px}
+.page-hero p{color:#aaa;font-size:1.15rem;max-width:560px;line-height:1.7;margin-top:16px}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;max-width:1000px}
+.avatar{width:100%;aspect-ratio:1;background:linear-gradient(135deg,#2a2a50,#0d0d1f);border-radius:24px}
+.about-text{display:flex;flex-direction:column;justify-content:center}
+.about-text p{color:#ccc;line-height:1.8;margin-bottom:16px}
+.skills{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.skill{padding:6px 16px;background:#121226;border:1px solid #262648;border-radius:8px;font-size:.85rem;color:#ddd}
+@media(max-width:640px){.about-grid{grid-template-columns:1fr}}
+</style><title>About — Portfolio</title></head><body>
+<nav>
+  <a href="index.html">Home</a><a href="about.html">About</a>
+  <a href="projects.html">Projects</a>
+  <a href="cv.pdf" download>CV</a>
+  <a href="contact.html">Contact</a>
+</nav>
+<div class="page-hero">
+  <h1>About <span>Me</span></h1>
+  <!--<p>A little bit about who I am, what I do, and what drives me.</p>-->
+</div>
+<section style="padding-top:0">
+  <div class="about-grid">
+    <div class="avatar"></div>
+    <div class="about-text">
+      <h2 style="text-align:left;font-size:2rem;margin-top:0">Hi, I'm Joel</h2>
+      <p>I've always had a passion for gaming like many others and programming always interested me, 
+	  I decided to study game programming at TGA after a couple of friends who studied there previously couldn't stop talking about how good it was and recommended that I'd apply.</p>
+     <!-- <p>A second paragraph about your interests, side projects, or what you're currently working on.</p>-->
+	 <p>Add more?</p>
+      <div class="skills">
+        <span class="skill">C#</span>
+        <span class="skill">Unity</span>
+        <span class="skill">C++</span>
+      </div>
+    </div>
+  </div>
+</section>
+<footer></footer>
+<script src="js/main.js"></script></body></html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="css/style.css"><style>
+.page-hero{min-height:30vh;display:flex;flex-direction:column;justify-content:center;padding:140px 8% 40px}
+.page-hero p{color:#aaa;font-size:1.15rem;max-width:560px;line-height:1.7;margin-top:16px}
+.project-list{display:flex;flex-direction:column;gap:20px;max-width:900px}
+.project-row{display:flex;align-items:center;gap:24px;background:#121226;border:1px solid #262648;border-radius:20px;padding:20px 24px;text-decoration:none;color:inherit;transition:border-color .2s,transform .2s}
+.project-row:hover{border-color:#c79cff;transform:translateX(6px)}
+.row-thumb{width:80px;height:80px;flex-shrink:0;background:linear-gradient(135deg,#2a2a50,#0d0d1f);border-radius:12px}
+.row-body{flex:1}
+.row-body h3{margin:0 0 6px;font-size:1.1rem}
+.row-body p{margin:0;color:#aaa;font-size:.9rem}
+.row-tags{display:flex;gap:8px;margin-top:10px}
+.tag{padding:3px 12px;background:#1d1d34;border:1px solid #333;border-radius:20px;font-size:.75rem;color:#c79cff}
+.row-arrow{color:#555;font-size:1.2rem;flex-shrink:0}
+.project-row:hover .row-arrow{color:#c79cff}
+.coming-soon{opacity:.4;pointer-events:none}
+</style><title>Projects — Portfolio</title></head><body>
+<nav>
+  <a href="index.html">Home</a><a href="about.html">About</a>
+  <a href="projects.html">Projects</a>
+  <a href="cv.pdf" download>CV</a>
+  <a href="contact.html">Contact</a>
+</nav>
+<div class="page-hero">
+  <h1>All <span>Projects</span></h1>
+  <p>Everything I've built — click any project to read more.</p>
+</div>
+<section style="padding-top:0">
+  <div class="project-list">
+    <a href="project-1.html" class="project-row">
+      <div class="row-thumb"></div>
+      <div class="row-body">
+        <h3>Ability Creation Tool</h3>
+        <p>A two-part system for designing and managing in-game abilities without touching code.</p>
+        <div class="row-tags"><span class="tag">Tool</span></div>
+      </div>
+      <span class="row-arrow">↗</span>
+    </a>
+    <a href="project-2.html" class="project-row">
+      <div class="row-thumb"></div>
+      <div class="row-body">
+        <h3>TBD</h3>
+        <p>Something here in a bit..</p>
+        <div class="row-tags"><span class="tag">TBD</span></div>
+      </div>
+      <span class="row-arrow">↗</span>
+    </a>
+    <!-- Add future projects below this line -->
+    <div class="project-row coming-soon">
+      <div class="row-thumb"></div>
+      <div class="row-body">
+        <h3>More coming soon</h3>
+        <p>Next project will appear here.</p>
+        <div class="row-tags"><span class="tag">Soon</span></div>
+      </div>
+      <span class="row-arrow">↗</span>
+    </div>
+  </div>
+</section>
+<footer></footer>
+<script src="js/main.js"></script></body></html>
