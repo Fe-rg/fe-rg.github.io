@@ -9,34 +9,137 @@
 .project-body p{margin:16px 0}
 .tech-stack{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .tech{padding:6px 16px;background:#121226;border:1px solid #262648;border-radius:8px;font-size:.85rem;color:#ddd}
-</style><title>Project 2 — Portfolio</title></head><body>
+.code-block{background:#0d0d1f;border:1px solid #262648;border-radius:12px;padding:20px 24px;margin:20px 0;overflow-x:auto}
+.code-block pre{margin:0;font-family:monospace;font-size:.85rem;color:#c79cff;line-height:1.7}
+.code-block .comment{color:#555}
+.code-block .kw{color:#8b5cf6}
+.code-block .type{color:#67e8f9}
+.code-block .str{color:#86efac}
+.diagram{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+.diagram-box{background:#121226;border:1px solid #262648;border-radius:14px;padding:18px;text-align:center}
+.diagram-box h4{margin:0 0 8px;color:#fff;font-size:.95rem}
+.diagram-box p{margin:0;font-size:.82rem;color:#888;line-height:1.5}
+.enemy-types{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0}
+.enemy-card{background:#121226;border:1px solid #262648;border-radius:12px;padding:14px 16px}
+.enemy-card h4{margin:0 0 6px;color:#c79cff;font-size:.9rem}
+.enemy-card p{margin:0;font-size:.8rem;color:#888;line-height:1.5}
+@media(max-width:600px){.diagram{grid-template-columns:1fr}}
+</style><title>Boss Wave Spawner — Portfolio</title></head><body>
 <nav><a href="index.html">Home</a><a href="about.html">About</a><a href="projects.html">Projects</a><a href="cv.pdf" download>CV</a><a href="contact.html">Contact</a></nav>
+
 <div class="project-hero">
-  <a href="index.html" class="back">← Back to portfolio</a>
+  <a href="projects.html" class="back">← Back to projects</a>
   <div>
-    <span class="tag">TBD</span>
+    <span class="tag">Game Dev</span>
+    <span class="tag">Systems</span>
+    <span class="tag">C++</span>
   </div>
-  <h1>Project Title</h1>
-  <p style="color:#aaa;font-size:1.1rem;max-width:600px">Short description of the project goes here.</p>
+  <h1>Boss Wave Spawner</h1>
+  <p style="color:#aaa;font-size:1.1rem;max-width:600px">An editor-configurable wave spawner for boss encounters — define enemy types and counts per wave without touching code, built on an in-house ECS engine.</p>
 </div>
+
 <section style="padding:0 8% 80px">
   <div class="project-img"></div>
+
   <div class="project-body">
+
     <h2>Overview</h2>
-    <p>Add your project description here.</p>
+    <p>
+      This system lets designers configure boss encounter waves entirely through the editor. Each wave can have its own mix of enemy types and quantities —
+      no code changes needed to tweak a fight. The spawner picks the best spawn point at runtime and works its way through the wave queue automatically.
+    </p>
+    <p>
+      It's built on Goose, an in-house ECS engine used at TGA, and uses a <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">BossWaveSpawnerComponent</code>
+      that stores all the wave data and runtime state together on the entity.
+    </p>
 
-    <h2>What I built</h2>
-    <p>Describe the work in more detail here.</p>
+    <h2>Architecture</h2>
+    <p>The system is split across three pieces:</p>
 
-    <h2>Challenges & Learnings</h2>
-    <p>What was tricky? What did you take away from it?</p>
-
-    <h2>Tech Stack</h2>
-    <div class="tech-stack">
-      <span class="tech">Add</span>
-      <span class="tech">Your</span>
-      <span class="tech">Tech Here</span>
+    <div class="diagram">
+      <div class="diagram-box">
+        <h4>BossWaveDataReferenceProperty</h4>
+        <p>Pure data — small spider, big spider, and drone counts per wave. Editable in the inspector.</p>
+      </div>
+      <div class="diagram-box" style="border-color:#c79cff33">
+        <h4>BossWaveSpawnerComponent</h4>
+        <p>Owns the wave list, spawn point refs, prefab refs, and live runtime state like current wave index and the active spawning queue.</p>
+      </div>
+      <div class="diagram-box">
+        <h4>Boss Spawner System</h4>
+        <p>Each tick, iterates the spawner view, picks the furthest spawn point, and instantiates the next enemy in the current wave.</p>
+      </div>
     </div>
+
+    <h2>Enemy Types</h2>
+    <p>Three enemy types can be mixed freely across any number of waves:</p>
+
+    <div class="enemy-types">
+      <div class="enemy-card">
+        <h4>Small Spider</h4>
+        <p>Lightweight, spawns first in each wave to pressure the player early.</p>
+      </div>
+      <div class="enemy-card">
+        <h4>Big Spider</h4>
+        <p>Tankier variant, spawns after small spiders in the wave order.</p>
+      </div>
+      <div class="enemy-card">
+        <h4>Drone</h4>
+        <p>Spawns last per wave. Each type is pulled from a configured prefab reference.</p>
+      </div>
+    </div>
+
+    <h2>Spawn Point Selection</h2>
+    <p>
+      Rather than picking a spawn point at random, the system calls <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">GetFurthestSpawnPointIndex</code>
+      each time it needs to place an enemy. This keeps spawns away from where the player currently is,
+      which avoids enemies appearing directly on top of them mid-fight.
+    </p>
+
+    <h2>Wave Queue</h2>
+    <p>
+      Active waves are tracked in a <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">spawningWaves</code> vector.
+      Each tick the system removes any wave from the front of the queue whose enemy counts have all hit zero,
+      then spawns the next enemy from the current wave. When the queue empties, <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">isSpawning</code> is cleared.
+    </p>
+
+    <div class="code-block"><pre><span class="comment">// Finished waves are pruned before spawning</span>
+comp.spawningWaves.erase(
+    std::remove_if(comp.spawningWaves.begin(), comp.spawningWaves.end(),
+        [&comp](<span class="kw">const int</span>& aWaveIndex) {
+            <span class="kw">const auto</span>& wave = comp.bossWaves.at(aWaveIndex);
+            <span class="kw">const int</span> remaining = wave.bigSpiderCount
+                               + wave.smallSpiderCount
+                               + wave.droneCount;
+            <span class="kw">return</span> remaining <= <span class="str">0</span>;
+        }),
+    comp.spawningWaves.end()
+);</pre></div>
+
+    <h2>Editor Integration</h2>
+    <p>
+      The component is fully reflected via <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">OnReflectComponent</code>,
+      so all wave data, prefab references, and spawn point links show up directly in the engine inspector.
+      A designer can add waves, set counts, and swap prefabs without opening a single source file.
+    </p>
+
+    <h2>What I learned</h2>
+    <p>
+      Getting the wave queue cleanup right took a bit of thought — the erase-remove idiom is clean but you have to make sure the counts are being mutated on the stored wave,
+      not a copy. I also found that spawning enemies one per tick (rather than all at once) gave a much better feel in-game
+      and avoided hitches from instantiating many prefabs in a single frame.
+    </p>
+    <p>
+      If I were extending it further I'd add per-wave spawn delays and a way to trigger waves based on boss health thresholds rather than a manual start flag.
+    </p>
+
+    <h2>Tech</h2>
+    <div class="tech-stack">
+      <span class="tech">C++</span>
+      <span class="tech">In-house ECS (Goose)</span>
+      <span class="tech">ImGui</span>
+    </div>
+
   </div>
 </section>
 <footer></footer>

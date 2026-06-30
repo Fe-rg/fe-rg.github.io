@@ -3,46 +3,244 @@
 .back{display:inline-flex;align-items:center;gap:8px;color:#aaa;text-decoration:none;margin-bottom:32px;font-size:.95rem;transition:color .2s}
 .back:hover{color:#c79cff}
 .tag{display:inline-block;padding:4px 14px;background:#1d1d34;border:1px solid #333;border-radius:20px;font-size:.8rem;color:#c79cff;margin-right:8px;margin-bottom:24px}
-.project-img{width:100%;height:400px;background:linear-gradient(135deg,#2a2a50,#0d0d1f);border-radius:20px;margin-bottom:48px}
+.project-img{width:100%;height:600px;background:linear-gradient(135deg,#2a2a50,#0d0d1f);border-radius:20px;margin-bottom:48px}
 .project-body{max-width:760px;margin:0 auto;line-height:1.8;color:#ccc}
 .project-body h2{text-align:left;font-size:1.6rem;margin-top:48px;color:#fff}
 .project-body p{margin:16px 0}
 .tech-stack{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .tech{padding:6px 16px;background:#121226;border:1px solid #262648;border-radius:8px;font-size:.85rem;color:#ddd}
+.code-block{background:#0d0d1f;border:1px solid #262648;border-radius:12px;padding:20px 24px;margin:20px 0;overflow-x:auto}
+.code-block pre{margin:0;font-family:monospace;font-size:.85rem;color:#c79cff;line-height:1.7}
+.code-block .comment{color:#555}
+.code-block .kw{color:#8b5cf6}
+.code-block .type{color:#67e8f9}
+.code-block .str{color:#86efac}
+.modifier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:20px 0}
+.modifier-card{background:#121226;border:1px solid #262648;border-radius:12px;padding:14px 16px}
+.modifier-card h4{margin:0 0 6px;color:#c79cff;font-size:.9rem}
+.modifier-card p{margin:0;font-size:.8rem;color:#888;line-height:1.5}
+.modifier-card.base{border-color:#c79cff44}
 </style><title>Ability Creation Tool — Portfolio</title></head><body>
 <nav><a href="index.html">Home</a><a href="about.html">About</a><a href="projects.html">Projects</a><a href="cv.pdf" download>CV</a><a href="contact.html">Contact</a></nav>
 <div class="project-hero">
-  <a href="index.html" class="back">← Back to portfolio</a>
+  <a href="projects.html" class="back">← Back to projects</a>
   <div>
-    <span class="tag">Game Dev</span>
     <span class="tag">Tool</span>
+    <span class="tag">C++</span>
   </div>
   <h1>Ability Creation Tool</h1>
-  <p style="color:#aaa;font-size:1.1rem;max-width:600px">A two-part system for designing and managing in-game abilities without touching code.</p>
+  <p style="color:#aaa;font-size:1.1rem;max-width:600px">A two-part system for designing and stacking projectile modifiers in an ImGui editor, with JSON save/load and full runtime behavior — no code changes needed to build a new ability.</p>
 </div>
 <section style="padding:0 8% 80px">
-  <div class="project-img"></div>
+<video class="project-img" autoplay loop muted playsinline style="object-fit:cover;">
+  <source src="media/project1.mp4" type="video/mp4">
+</video>
   <div class="project-body">
+
     <h2>Overview</h2>
-    <p>For my specialization during my 2nd year at TGA I wanted to make a ability modifier system like the ones you can find in games like Path of Exile with their support gems.
-	The modifiers are supposed to modify anything from the speed of the ability to completely changing the behavior of it, for example instead of traveling in a straight line the projectiles could instead orbit the player.
-	<br><br>I also wanted to make it so a designer could utilize the system to create ability presets that you later could utilize in the game.</p>
+    <p>
+      For my specialization in 2nd year at TGA I wanted to build something inspired by Path of Exile's support gem system
+      where you can stack modifiers onto an ability to completely change how it behaves.
+      Things like making projectiles chain between enemies, split apart on hit, or fork into multiple directions on collision.
+    </p>
+    <p>
+      The goal was that a designer could open an ImGui window, pick and tune modifiers, reorder them, save the result to JSON,
+      and load it back later, without touching any code. The runtime then reads that setup and plays it back in-game.
+    </p>
 
-    <h2>Part 1 — Editor</h2>
-    <p>With the ImGui window that I'm currently using to create/change the abilities you can choose different modifiers to use and tune the settings for them. 
-	You can also reorder the modifiers to decide the order of operation to fit the feel you're going for.
-	<br><br>When you're done setting up the ability you can then save it using json, you can then load it at a later point if you want to tweak it!</p>
+    <h2>Part 1 — The Editor</h2>
+    <p>
+      The ImGui editor lets you toggle modifiers on and off, configure their settings with drag sliders and int inputs,
+      and reorder them with up/down buttons since the order they fire in actually matters.
+      When you're happy with the setup you hit save, which writes each modifier's data out to a JSON file.
+      There's also a directory scan that finds all existing ability files so you can pick one from a dropdown and load it back.
+    </p>
 
-    <h2>Part 2 — Runtime</h2>
-    <p>How it works in-game currently is that there's base modifiers that are always applied, this could be thing like projectile speed, more projectiles or traveling behavior like orbit like I mentioned earlier.<br>
-	<br>Active modifiers however have some sort of trigger, usually collision of some kind. When the object collides it applies the current active modifier which is decided by the order set in the tool previously, 
-	it will keep applying the same active modifier on collision until said modifier runs out of "charges" after which it changes to the next modifier in line. When out of active modifiers and it collides, then the projectiles lifetime is over!
-	</p>
+    <div class="code-block"><pre><span class="comment">// Each modifier handles its own save/load</span>
+<span class="kw">inline void</span> Fork::<span class="type">SaveJSon</span>(<span class="kw">const char</span>* aFilePath, <span class="kw">const char</span>* <span class="comment">/*aName*/</span>) {
+    JSonManager::Save(aFilePath, <span class="str">"Fork"</span>, myForkCount,    <span class="str">"ForkCount"</span>);
+    JSonManager::Save(aFilePath, <span class="str">"Fork"</span>, myForkAngle,    <span class="str">"ForkAngle"</span>);
+    JSonManager::Save(aFilePath, <span class="str">"Fork"</span>, myForkProjectileCount, <span class="str">"ForkProjCount"</span>);
+}</pre></div>
 
-    <h2>Code Examples & Videos</h2>
+    <h2>Part 2 — Modifiers</h2>
+    <p>
+      All modifiers share a virtual <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">Modifier</code> base with an
+      <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">Apply(Projectile&)</code> method,
+      a <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">Clone()</code> for copying onto new projectiles,
+      and <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">SaveJSon</code>/<code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">LoadJSon</code>.
+      There are two categories:
+    </p>
+
+    <div class="modifier-grid">
+      <div class="modifier-card base">
+        <h4>ProjectileSpeed</h4>
+        <p>Base modifier. Adds a flat speed bonus when the ability fires — applied immediately, never queued.</p>
+      </div>
+      <div class="modifier-card base">
+        <h4>MoreProjectiles</h4>
+        <p>Base modifier. Increases the projectile count fired in the spread. Applied before any are spawned.</p>
+      </div>
+      <div class="modifier-card">
+        <h4>Chain</h4>
+        <p>On collision, finds the nearest enemy that wasn't just hit and redirects the projectile toward it.</p>
+      </div>
+      <div class="modifier-card">
+        <h4>Fork</h4>
+        <p>On collision, disables the projectile and spawns N child projectiles spread across a configurable angle.</p>
+      </div>
+      <div class="modifier-card">
+        <h4>Split</h4>
+        <p>Like Fork but keeps the parent alive, spawning children alongside it. Supports multiple split charges.</p>
+      </div>
+      <div class="modifier-card">
+        <h4>Orbit</h4>
+        <p>Changes the projectile's travel type to orbit the player instead of traveling in a straight line.</p>
+      </div>
+    </div>
+
+    <p>
+      Here's <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">Fork::Apply</code> as an example.
+      It uses a quaternion to rotate the parent's direction by even steps across a configurable angle,
+      spawns each forked child projectile with its own copy of the remaining modifier queue, then disables the parent:
+    </p>
+
+    <div class="code-block"><pre><span class="kw">bool</span> Fork::<span class="type">Apply</span>(Projectile& aParentProj) {
+    <span class="kw">if</span> (myForkCount > <span class="str">0</span>) {
+        myForkCount--;
+
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="str">0</span>; i &lt; myForkProjectileCount; i++) {
+            <span class="comment">// Spread evenly across the fork angle, centered on parent direction</span>
+            <span class="kw">const float</span> angle = -myForkAngle * <span class="str">0.5f</span>
+                + (myForkAngle / <span class="kw">static_cast</span>&lt;<span class="kw">float</span>&gt;(myForkProjectileCount - <span class="str">1</span>)) * <span class="kw">static_cast</span>&lt;<span class="kw">float</span>&gt;(i);
+
+            Tga::Quaternionf rot({ <span class="str">0.f</span>, <span class="str">1.f</span>, <span class="str">0.f</span> }, angle);
+            Tga::Vector3f dir = Tga::Quaternionf::RotateVectorByQuaternion(
+                rot, aParentProj.GetDirection()).GetNormalized();
+
+            Projectile forkedProj;
+            forkedProj.Init(aParentProj.GetProjectileSpeed(), aParentProj.GetPosition(),
+                dir, aParentProj.GetModifiers(), aParentProj.GetActiveModifiers(),
+                aParentProj.GetLastHitEnemy());
+
+            aParentProj.AddChildProj(std::move(forkedProj));
+        }
+
+        aParentProj.DisableProjectile();  <span class="comment">// parent dies, children carry on</span>
+        <span class="kw">return true</span>;
+    }
+    <span class="kw">return false</span>;
+}</pre></div>
+
+    <p>
+      Chain works differently, instead of spawning new projectiles it finds the closest enemy within a
+      max distance and redirects the existing projectile towards it. Chain only returns true if there are still charges left after
+      redirecting, so the projectile knows when it's done chaining:
+    </p>
+
+    <div class="code-block"><pre><span class="kw">bool</span> Chain::<span class="type">FindTarget</span>(Projectile& aParentProj) {
+    <span class="kw">if</span> (myChainCount &lt;= <span class="str">0</span>) <span class="kw">return false</span>;
+
+    <span class="kw">float</span> closestDist = std::numeric_limits&lt;<span class="kw">float</span>&gt;::max();
+    Tga::Vector3f closestPos;
+    <span class="kw">bool</span> foundTarget = <span class="kw">false</span>;
+
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; it : Getter::GetGameWorld()->GetEnemies()) {
+        <span class="kw">const float</span> dist = Tga::Vector3f::Distance(
+            it->transform.GetPosition(), aParentProj.GetPosition());
+
+        <span class="comment">// Skip the enemy we just hit, and anything out of chain range</span>
+        <span class="kw">if</span> (it == aParentProj.GetLastHitEnemy() || dist > myMaxChainDist) <span class="kw">continue</span>;
+
+        <span class="kw">if</span> (dist &lt; closestDist) {
+            closestDist = dist;
+            closestPos  = it->transform.GetPosition();
+            foundTarget = <span class="kw">true</span>;
+        }
+    }
+
+    <span class="kw">if</span> (foundTarget)
+        aParentProj.SetDirection(newDirection(aParentProj.GetPosition(), closestPos));
+
+    --myChainCount;
+    <span class="comment">// Return false on the last charge so the projectile knows it's done chaining</span>
+    <span class="kw">return</span> myChainCount > <span class="str">0</span> && foundTarget;
+}</pre></div>
+
+    <h2>Part 3 — Runtime</h2>
+    <p>
+      Each projectile carries a copy of the modifier map and an ordered list of which active modifiers are still in play.
+      Base modifiers (speed, count) get consumed immediately on <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">Init</code> —
+      they're not queued, they just modify the starting state and get removed.
+    </p>
+
+    <div class="code-block"><pre><span class="comment">// Base modifiers fire immediately on Init and are stripped from the queue</span>
+<span class="kw">for</span> (<span class="type">size_t</span> i = <span class="str">0</span>; i < myActiveModifiers.size();) {
+    <span class="kw">auto</span>* mod = myModifiers[myActiveModifiers[i]].get();
+    <span class="kw">if</span> (mod && mod->IsBaseModifier()) {
+        mod->Apply(*<span class="kw">this</span>);
+        myActiveModifiers.erase(myActiveModifiers.begin() + i);
+        <span class="kw">continue</span>;
+    }
+    ++i;
+}</pre></div>
+
+    <p>
+      The remaining active modifiers sit in a queue and fire on collision, in the order you set in the editor.
+      The same modifier keeps firing on each collision until it runs out of charges, then the next one in line takes over.
+      When the queue is empty and the projectile collides again, it deactivates.
+    </p>
+
+    <div class="code-block"><pre><span class="comment">// On collision -> apply the front modifier, pop it if it's out of charges</span>
+<span class="kw">const</span> ModifierTypes type = myActiveModifiers.front();
+Modifier* mod            = myModifiers[type].get();
+
+<span class="kw">if</span> (mod) {
+    <span class="comment">// Apply returns false when the modifier is exhausted</span>
+    <span class="kw">if</span> (!mod->Apply(*<span class="kw">this</span>)) {
+        myActiveModifiers.erase(myActiveModifiers.begin());
+    }
+}</pre></div>
+
+    <p>
+      Child projectiles (from Fork or Split) are stored on the parent and updated recursively each tick,
+      so a single fired projectile can branch into a whole tree of children that all clean themselves up when done.
+    </p>
+
+    <div class="code-block"><pre><span class="comment">// Returns true while any child is still alive, keeping the parent alive too</span>
+<span class="kw">bool</span> Projectile::<span class="type">UpdateChildren</span>(<span class="kw">const float</span> aDeltaTime) {
+    <span class="kw">for</span> (<span class="type">size_t</span> i = <span class="str">0</span>; i &lt; myProjChildren.size();) {
+        <span class="kw">if</span> (!myProjChildren[i].Update(aDeltaTime))
+            myProjChildren.erase(myProjChildren.begin() + <span class="kw">static_cast</span>&lt;<span class="kw">int</span>&gt;(i));
+        <span class="kw">else</span>
+            ++i;
+    }
+    <span class="kw">return</span> !myProjChildren.empty();
+}
+
+<span class="comment">// Parent stays alive as long as it or any child is still active</span>
+<span class="kw">const bool</span> isActive = UpdateChildren(aDeltaTime) || myActive;
+<span class="kw">return</span> isActive;</pre></div>
+
+    <h2>What I learned</h2>
+    <p>
+      The trickiest part was getting the modifier queue to feel right, especially making sure base modifiers were consumed
+      at init time rather than on the first collision, and that the clone on each new projectile was deep enough that
+      charges on one projectile didn't affect another.
+    </p>
+    <p>
+      If I were to extend it I'd add support for condition-based triggers beyond just collision (like a timer or a distance threshold).
+    </p>
+	<p>
+	One thing I regret doing was using the schools own in-house engine instead of the one me and my group have made for our projects, as the schools engine is rather lacking as we're
+	supposed to develop a lot of it ourselves for said projects. This caused me to spend time solving certain issues like collision that could've been spent doing other things which led to an overall worse product in the end.
+
+    <h2>Tech</h2>
     <div class="tech-stack">
       <span class="tech">C++</span>
       <span class="tech">In-house Engine</span>
+      <span class="tech">ImGui</span>
+      <span class="tech">nlohmann/json</span>
     </div>
   </div>
 </section>

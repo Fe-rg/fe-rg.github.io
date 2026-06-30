@@ -1,0 +1,156 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="css/style.css"><style>
+.project-hero{min-height:40vh;display:flex;flex-direction:column;justify-content:center;padding:120px 8% 60px}
+.back{display:inline-flex;align-items:center;gap:8px;color:#aaa;text-decoration:none;margin-bottom:32px;font-size:.95rem;transition:color .2s}
+.back:hover{color:#c79cff}
+.tag{display:inline-block;padding:4px 14px;background:#1d1d34;border:1px solid #333;border-radius:20px;font-size:.8rem;color:#c79cff;margin-right:8px;margin-bottom:24px}
+.project-img{width:100%;height:400px;background:linear-gradient(135deg,#2a2a50,#0d0d1f);border-radius:20px;margin-bottom:48px}
+.project-body{max-width:760px;margin:0 auto;line-height:1.8;color:#ccc}
+.project-body h2{text-align:left;font-size:1.6rem;margin-top:48px;color:#fff}
+.project-body p{margin:16px 0}
+.tech-stack{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.tech{padding:6px 16px;background:#121226;border:1px solid #262648;border-radius:8px;font-size:.85rem;color:#ddd}
+.code-block{background:#0d0d1f;border:1px solid #262648;border-radius:12px;padding:20px 24px;margin:20px 0;overflow-x:auto}
+.code-block pre{margin:0;font-family:monospace;font-size:.85rem;color:#c79cff;line-height:1.7}
+.code-block .comment{color:#555}
+.code-block .kw{color:#8b5cf6}
+.code-block .type{color:#67e8f9}
+.code-block .str{color:#86efac}
+.diagram{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+.diagram-box{background:#121226;border:1px solid #262648;border-radius:14px;padding:18px;text-align:center}
+.diagram-box h4{margin:0 0 8px;color:#fff;font-size:.95rem}
+.diagram-box p{margin:0;font-size:.82rem;color:#888;line-height:1.5}
+.diagram-arrow{display:flex;align-items:center;justify-content:center;color:#555;font-size:1.4rem}
+.ability-types{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:20px 0}
+.ability-card{background:#121226;border:1px solid #262648;border-radius:12px;padding:14px 16px}
+.ability-card h4{margin:0 0 6px;color:#c79cff;font-size:.9rem}
+.ability-card p{margin:0;font-size:.8rem;color:#888;line-height:1.5}
+@media(max-width:600px){.diagram{grid-template-columns:1fr}.ability-types{grid-template-columns:1fr 1fr}}
+</style><title>Player Ability System — Portfolio</title></head><body>
+<nav><a href="index.html">Home</a><a href="about.html">About</a><a href="projects.html">Projects</a><a href="cv.pdf" download>CV</a><a href="contact.html">Contact</a></nav>
+
+<div class="project-hero">
+  <a href="projects.html" class="back">← Back to projects</a>
+  <div>
+    <span class="tag">Game Dev</span>
+    <span class="tag">Systems</span>
+    <span class="tag">C++</span>
+  </div>
+  <h1>Player Ability System</h1>
+  <p style="color:#aaa;font-size:1.1rem;max-width:600px">A data-driven ability framework built on an in-house engine. Supporting multiple ability types with per-type configuration, cooldowns, and JSON serialization.</p>
+</div>
+
+<section style="padding:0 8% 80px">
+  <div class="project-img"></div>
+
+  <div class="project-body">
+
+    <h2>Overview</h2>
+    <p>
+      This system was built during a game project at TGA, using an in-house engine with Diablo 3 as reference.
+      The goal was a clean, extensible way to give the player multiple distinct abilities each with its own data, cooldown, and runtime behavior
+      without hardcoding ability logic into the player component itself.
+    </p>
+    <p>
+      Each ability type carries its own configuration struct and can be set up, serialized, and tweaked through an ImGui editor window at design time,
+      then loaded back at runtime via JSON.
+    </p>
+
+    <h2>Architecture</h2>
+    <p>The system is split across three layers:</p>
+
+    <div class="diagram">
+      <div class="diagram-box">
+        <h4>AbilityBase (config)</h4>
+        <p>Pure data structs per ability type. Handles ImGui editing, JSON save/load.</p>
+      </div>
+      <div class="diagram-box" style="border-color:#c79cff33">
+        <h4>PlayerAbility (runtime)</h4>
+        <p>Wraps config with live state — cooldown timer, unlock flag etc.</p>
+      </div>
+      <div class="diagram-box">
+        <h4>PlayerComponent (ECS)</h4>
+        <p>Owns a map of abilities keyed by state enum.</p>
+      </div>
+    </div>
+
+    <p>
+      Ability types are identified by a <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">PlayerStates</code> enum,
+      which doubles as the state machine state the player enters when using that ability.
+      This means the ability system and the state machine stay in sync by design, no extra mapping needed.
+    </p>
+
+    <h2>Ability Types</h2>
+    <p>Five concrete ability types each inherit from <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">AbilityBase</code> and define their own fields:</p>
+
+    <div class="ability-types">
+      <div class="ability-card">
+        <h4>Dash</h4>
+        <p>Max distance + speed. Moves the player rapidly in a direction.</p>
+      </div>
+      <div class="ability-card">
+        <h4>Shield</h4>
+        <p>Duration only. Activates a timed defensive state.</p>
+      </div>
+      <div class="ability-card">
+        <h4>Spell</h4>
+        <p>Radius, damage, hitbox frame. A general-purpose AoE cast.</p>
+      </div>
+      <div class="ability-card">
+        <h4>Generator</h4>
+        <p>Builds a resource on hit. Same shape as Spell but distinct behavior.</p>
+      </div>
+      <div class="ability-card">
+        <h4>Spender</h4>
+        <p>Consumes built-up resource for an empowered attack.</p>
+      </div>
+    </div>
+
+    <h2>JSON Serialization</h2>
+    <p>
+      Every ability type implements <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">LoadJson</code> and <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">SaveJson</code>
+      via the virtual <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">AbilityBase</code> interface,
+      so the editor can save any ability to disk and the game can reload it at startup without knowing the concrete type at the call site.
+    </p>
+
+    <div class="code-block"><pre><span class="comment">// Each ability type handles its own serialization</span>
+<span class="kw">void</span> DashAbility::<span class="type">LoadJson</span>(<span class="kw">const</span> nlohmann::json& aJson) {
+    length = aJson.at(<span class="str">"length"</span>).get&lt;<span class="kw">float</span>&gt;();
+    speed  = aJson.at(<span class="str">"speed"</span>).get&lt;<span class="kw">float</span>&gt;();
+}
+
+<span class="comment">// Runtime setup picks the right concrete type from the enum</span>
+<span class="kw">case</span> PlayerStates::Dash:
+    <span class="kw">return new</span> <span class="type">Dash</span>(<span class="kw">static_cast</span>&lt;<span class="kw">const</span> DashAbility&&gt;(aAbility));</pre></div>
+
+    <h2>ImGui Integration</h2>
+    <p>
+      Each ability type also implements <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">ImGuiSetup</code>,
+      which renders the relevant drag fields directly in the editor. A designer can open the window, pick an ability type,
+      tune the values visually, and save — no recompile needed.
+      The <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">uint8_t& aInfo</code> flag is used to
+      detect when any value was changed so the editor knows to mark the file as dirty.
+    </p>
+
+    <h2>What I learned</h2>
+    <p>
+      This was my first time designing a system that needed to be both editor-friendly and runtime-efficient.
+      Using a virtual base with per-type structs kept each ability's data isolated and easy to extend,
+      adding a new ability type is just a new struct and a case in the factory switch.
+    </p>
+    <p>
+      If I were to revisit it I'd look at replacing the raw <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">new</code>/<code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">delete</code> pattern
+      with <code style="color:#c79cff;background:#0d0d1f;padding:2px 7px;border-radius:5px">std::unique_ptr</code> to make ownership clearer and avoid having to remember the manual cleanup in the destructor.
+    </p>
+
+    <h2>Tech</h2>
+    <div class="tech-stack">
+      <span class="tech">C++</span>
+      <span class="tech">In-house engine</span>
+      <span class="tech">ImGui</span>
+      <span class="tech">nlohmann/json</span>
+    </div>
+
+  </div>
+</section>
+<footer></footer>
+<script src="js/main.js"></script></body></html>
